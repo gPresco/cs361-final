@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 class Track
+
   def initialize(segments, name=nil)
     @name = name
     segment_objects = []
@@ -16,7 +17,7 @@ class Track
     track_json += '"type": "Feature", '
     track_json += build_properties_json if @name != nil
     track_json += build_geometry_json
-    track_json += '}}'
+    track_json += '}'
 
     track_json
   end
@@ -34,7 +35,7 @@ class Track
     geometry_json += '"type": "MultiLineString",'
     geometry_json += '"coordinates": ['
     geometry_json += build_coordinates_json
-    geometry_json += ']}}'
+    geometry_json += ']}'
 
     geometry_json
   end
@@ -51,81 +52,84 @@ class Track
 
   def build_segment_coordinates(segment)
     segment_coordinates = segment.coordinates.map do |c|
-      coordinate = '[' + "#{c.lon},#{c.lat}"
-      coordinate += ",#{c.ele}" if c.ele != nil
+      coordinate = '[' + "#{c.longitude},#{c.latitude}"
+      coordinate += ",#{c.elevation}" if c.elevation != nil
       coordinate += ']'
     end.join(',')
 
     segment_coordinates
   end
 
-    
 end
 
 class TrackSegment
+
   attr_reader :coordinates
+
   def initialize(coordinates)
     @coordinates = coordinates
   end
+
 end
 
 class Point
 
-  attr_reader :lat, :lon, :ele
+  attr_reader :latitude, :longitude, :elevation
 
-  def initialize(lon, lat, ele=nil)
-    @lon = lon
-    @lat = lat
-    @ele = ele
+  def initialize(longitude, latitude, elevation=nil)
+    @longitude = longitude
+    @latitude = latitude
+    @elevation = elevation
   end
 end
 
 class Waypoint
 
+attr_reader :latitude, :longitude, :elevation, :name, :type
 
-
-attr_reader :lat, :lon, :ele, :name, :type
-
-  def initialize(lon, lat, ele=nil, name=nil, type=nil)
-    @lat = lat
-    @lon = lon
-    @ele = ele
+  def initialize(longitude, latitude, elevation=nil, name=nil, type=nil)
+    @latitude = latitude
+    @longitude = longitude
+    @elevation = elevation
     @name = name
     @type = type
   end
 
   def get_waypoint_json(indent=0)
-    j = '{"type": "Feature",'
+    waypoint_json = '{"type": "Feature",'
     # if name is not nil or type is not nil
-    j += '"geometry": {"type": "Point","coordinates": '
-    j += "[#{@lon},#{@lat}"
-    if ele != nil
-      j += ",#{@ele}"
+    waypoint_json += '"geometry": {"type": "Point","coordinates": '
+    waypoint_json += "[#{@longitude},#{@latitude}"
+    if elevation != nil
+      waypoint_json += ",#{@elevation}"
     end
-    j += ']},'
+    waypoint_json += ']},'
     if name != nil or type != nil
-      j += '"properties": {'
+      waypoint_json += '"properties": {'
       if name != nil
-        j += '"title": "' + @name + '"'
+        waypoint_json += '"title": "' + @name + '"'
       end
       if type != nil  # if type is not nil
         if name != nil
-          j += ','
+          waypoint_json += ','
         end
-        j += '"icon": "' + @type + '"'  # type is the icon
+        waypoint_json += '"icon": "' + @type + '"'  # type is the icon
       end
-      j += '}'
+      waypoint_json += '}'
     end
-    j += "}"
-    return j
+    waypoint_json += "}"
+    return waypoint_json
   end
+
 end
 
 class World
-def initialize(name, things)
-  @name = name
-  @features = things
-end
+
+  def initialize(name, things)
+    @name = name
+    @features = things
+  end
+
   def add_feature(f)
     @features.append(t)
   end
@@ -145,6 +149,7 @@ end
     end
     s + "]}"
   end
+
 end
 
 def main()
