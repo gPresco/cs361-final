@@ -11,43 +11,57 @@ class Track
     @segments = segment_objects
   end
 
-  def get_track_json()
-    j = '{'
-    j += '"type": "Feature", '
-    if @name != nil
-      j+= '"properties": {'
-      j += '"title": "' + @name + '"'
-      j += '},'
-    end
-    j += '"geometry": {'
-    j += '"type": "MultiLineString",'
-    j +='"coordinates": ['
-    # Loop through all the segment objects
-    @segments.each_with_index do |s, index|
-      if index > 0
-        j += ","
-      end
-      j += '['
-      # Loop through all the coordinates in the segment
-      tsj = ''
-      s.coordinates.each do |c|
-        if tsj != ''
-          tsj += ','
-        end
-        # Add the coordinate
-        tsj += '['
-        tsj += "#{c.lon},#{c.lat}"
-        if c.ele != nil
-          tsj += ",#{c.ele}"
-        end
-        tsj += ']'
-      end
-      j+=tsj
-      j+=']'
-    end
-    j + ']}}'
+  def get_track_json
+    track_json = '{'
+    track_json += '"type": "Feature", '
+    track_json += build_properties_json if @name != nil
+    track_json += build_geometry_json
+    track_json += '}}'
+
+    track_json
   end
+
+  def build_properties_json
+    properties_json = '"properties": {'
+    properties_json += '"title": "' + @name + '"'
+    properties_json += '},'
+
+    properties_json
+  end
+
+  def build_geometry_json
+    geometry_json = '"geometry": {'
+    geometry_json += '"type": "MultiLineString",'
+    geometry_json += '"coordinates": ['
+    geometry_json += build_coordinates_json
+    geometry_json += ']}}'
+
+    geometry_json
+  end
+
+  def build_coordinates_json
+    coordinates_json = @segments.map.with_index do |segment, index|
+      coordinate_group = '[' + build_segment_coordinates(segment)
+      coordinate_group += ']' unless index == @segments.length - 1
+      coordinate_group
+    end.join(',')
+
+    coordinates_json
+  end
+
+  def build_segment_coordinates(segment)
+    segment_coordinates = segment.coordinates.map do |c|
+      coordinate = '[' + "#{c.lon},#{c.lat}"
+      coordinate += ",#{c.ele}" if c.ele != nil
+      coordinate += ']'
+    end.join(',')
+
+    segment_coordinates
+  end
+
+    
 end
+
 class TrackSegment
   attr_reader :coordinates
   def initialize(coordinates)
